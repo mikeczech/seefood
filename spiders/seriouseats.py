@@ -18,7 +18,7 @@ class SeriousEatsSpider(scrapy.Spider):
             if match:
                 pages.append(int(match.group(1)))
         max_page = max(pages)
-        return 1, 3
+        return 1, 1
 
     def parse_start_page(self, response):
         page_start, page_end = self.get_pages(response)
@@ -30,17 +30,23 @@ class SeriousEatsSpider(scrapy.Spider):
 
     def parse_ingredient_page(self, response):
         for module in response.css("section#recipes div.module"):
-            title = module.css("div.metadata a h4.title::text").get()
+            title = module.css("div.metadata a h4.title").xpath("string(.)").get()
             if title:
-                short_description = module.css("div.metadata a p.kicker::text").get()
+                short_description = module.css("div.metadata a p.kicker").xpath("string(.)").get()
                 thumbnail = module.css("img").xpath("@data-src").get()
                 url = module.css("a").xpath("@href").get()
-                yield {
+                request = response.follow(url, self.parse_recipe_page)
+                request.meta["data"] = {
                     "title": title,
                     "short_description": short_description,
                     "thumbnail": thumbnail,
                     "url": url,
                 }
+                yield request
+        
 
     def parse_recipe_page(self, response):
-        pass
+        description = response.css("div.recipe-introduction div.recipe-introduction-body").xpath("string(p[2])").get()
+        data = response.meta["data"]
+        data["description"] = description
+        yield data
