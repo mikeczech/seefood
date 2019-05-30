@@ -10,6 +10,7 @@ black = "*"
 [packages]
 pandas = "*"
 scrapy = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.7"
