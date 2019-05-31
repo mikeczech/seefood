@@ -6,6 +6,11 @@ class SeriousEatsSpider(scrapy.Spider):
     name = "seriouseats"
     base_url = "https://www.seriouseats.com/recipes/topics"
 
+    custom_settings = {
+        "DOWNLOAD_DELAY": 0.5,
+        "USER_AGENT": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0",
+    }
+
     def start_requests(self):
         yield scrapy.Request(
             url=f"{self.base_url}/ingredient", callback=self.parse_start_page
