@@ -47,22 +47,35 @@ class SeriousEatsSpider(scrapy.Spider):
                 yield request
 
     def parse_recipe_page(self, response):
-        description = (
+        data = response.meta["data"]
+
+        data["description"] = (
             response.css("div.recipe-introduction div.recipe-introduction-body")
             .xpath("string(p[2])")
             .get()
         )
-        directions = "||||".join(
+        data["directions"] = "||||".join(
             filter(
                 lambda x: x != "",
                 response.css("div.recipe-procedure-text p").xpath("string(.)").getall(),
             )
         )
-        ingredients = "||||".join(
+        data["ingredients"] = "||||".join(
             response.css("li.ingredient").xpath("string(.)").getall()
         )
-        data = response.meta["data"]
-        data["description"] = description
-        data["directions"] = directions
-        data["ingredients"] = ingredients
+
+        data["rating"] = float(response.css("span.rating-value::text").get())
+
+        data["total_time"] = (
+            response.css("ul.recipe-about").xpath("string(li[3]/span[2])").get()
+        )
+
+        data["active_time"] = (
+            response.css("ul.recipe-about").xpath("string(li[2]/span[2])").get()
+        )
+
+        data["yields"] = (
+            response.css("ul.recipe-about").xpath("string(li[1]/span[2])").get()
+        )
+
         yield data
