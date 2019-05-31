@@ -23,7 +23,7 @@ class SeriousEatsSpider(scrapy.Spider):
             if match:
                 pages.append(int(match.group(1)))
         max_page = max(pages)
-        return 1, 1
+        return 1, max_page
 
     def parse_start_page(self, response):
         page_start, page_end = self.get_pages(response)
