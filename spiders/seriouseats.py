@@ -54,10 +54,11 @@ class SeriousEatsSpider(scrapy.Spider):
     def parse_recipe_page(self, response):
         data = response.meta["data"]
 
-        data["description"] = (
+        data["description"] = "".join(
             response.css("div.recipe-introduction div.recipe-introduction-body")
-            .xpath("string(p[2])")
-            .get()
+            .xpath("p[not(@class)]")
+            .xpath("string(.)")
+            .getall()
         )
         data["directions"] = "||||".join(
             filter(
