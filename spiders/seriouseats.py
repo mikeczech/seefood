@@ -64,7 +64,7 @@ class SeriousEatsSpider(scrapy.Spider):
             response.css("li.ingredient").xpath("string(.)").getall()
         )
 
-        data["rating"] = float(response.css("span.rating-value::text").get())
+        data["rating"] = response.css("span.rating-value::text").get()
 
         data["total_time"] = (
             response.css("ul.recipe-about").xpath("string(li[3]/span[2])").get()
