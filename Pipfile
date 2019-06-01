@@ -11,6 +11,11 @@ black = "*"
 pandas = "*"
 scrapy = "*"
 jupyterlab = "*"
+tensorflow = "==2.0.0a0"
+keras = "*"
+tqdm = "*"
+ipywidgets = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.7"
