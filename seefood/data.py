@@ -117,57 +117,6 @@ class BasicTextTransformer(BaseEstimator, TransformerMixin):
         return X
 
 
-class UnclutterTitleTansformer(BaseEstimator, TransformerMixin):
-    """
-    Removes meaningless parts of titles (e.g. 'The best ...').
-    """
-
-    def __init__(self, src_col, target_col):
-        self._src_col = src_col
-        self._target_col = target_col
-
-    @staticmethod
-    def delete_preamble(title):
-        if ":" in title:
-            title_split = title.split(":")
-            return title_split[-1].strip()
-        return title
-
-    @staticmethod
-    def get_title_post_description(title):
-        match = re.search(r".+\((.+)(\)|\.{3})", title)
-        if match:
-            return match.group(1)
-        return title
-
-    @staticmethod
-    def remove_the_best_prefix(title):
-        match = re.search(r"The Best (.+)", title)
-        if match:
-            return match.group(1)
-        return title
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        X = X.assign(
-            **{
-                self._target_col: X[self._src_col].map(
-                    UnclutterTitleTansformer.delete_preamble
-                )
-            }
-        )
-        X[self._target_col] = X[self._target_col].map(
-            UnclutterTitleTansformer.get_title_post_description
-        )
-        X[self._target_col] = X[self._target_col].map(
-            UnclutterTitleTansformer.remove_the_best_prefix
-        )
-
-        return X
-
-
 class CreateLabelsTransformer(BaseEstimator, TransformerMixin):
     """
     Creates image labels from preprocessed titles and descriptions
