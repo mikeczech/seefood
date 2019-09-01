@@ -123,34 +123,28 @@ class CreateLabelsTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, title_col, description_col, target_col, title_word_count_threshold=60
+        self, title_col, description_col, target_col, high_freq_threshold=60
     ):
         self._title_col = title_col
         self._description_col = description_col
         self._target_col = target_col
-        self._title_word_count_threshold = title_word_count_threshold
+        self._high_freq_threshold = high_freq_threshold
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X, y=None):
         # unclutter descriptions
-        title_dict = corpora.Dictionary(X[self._title_col])
-        filtered_title_vocab = [
-            token
-            for token in set(itertools.chain(*X[self._title_col]))
-            if title_dict.dfs[title_dict.token2id[token]]
-            > self._title_word_count_threshold
-        ]
+        title_vocab = set(itertools.chain(*X[self._title_col]))
         uncluttered_descriptions = X[self._description_col].map(
-            lambda d: [t for t in d if t in filtered_title_vocab]
+            lambda d: [t for t in d if t in title_vocab]
         )
 
         # build labels
         labels = [t + d for t, d in zip(X[self._title_col], uncluttered_descriptions)]
         labels_dict = corpora.Dictionary(labels)
         high_freq_labels = [
-            [t for t in l if labels_dict.dfs[labels_dict.token2id[t]] > 50]
+            [t for t in l if labels_dict.dfs[labels_dict.token2id[t]] > self._high_freq_threshold]
             for l in labels
         ]
         X = X.assign(**{self._target_col: [set(sent) for sent in high_freq_labels]})
