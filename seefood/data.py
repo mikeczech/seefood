@@ -41,35 +41,14 @@ class ThumbnailUrlTransformer(BaseEstimator, TransformerMixin):
 
 
 class BasicTextTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, src_col, target_col):
+    def __init__(self, src_col, target_col, bigram_threshold=50, trigram_threshold=50):
         self._src_col = src_col
         self._target_col = target_col
         nltk.download("stopwords")
-        self._nlp = spacy.load("en", disable=["parser", "ner"])
+        self._nlp = spacy.load("en_core_web_md")
         self._stop_words = stopwords.words("english")
-        self._stop_words.extend(
-            [
-                "from",
-                "subject",
-                "re",
-                "edu",
-                "use",
-                "like",
-                "recipe",
-                "cook",
-                "dish",
-                "easy",
-                "simple",
-                "homemade",
-                "style",
-                "gluten",
-                "free",
-                "sweet",
-                "cookbook",
-                "fresh",
-                "quick",
-            ]
-        )
+        self._bigram_threshold = bigram_threshold
+        self._trigram_threshold = trigram_threshold
 
     def remove_stopwords(self, sents):
         return [
@@ -103,8 +82,8 @@ class BasicTextTransformer(BaseEstimator, TransformerMixin):
         sents = X[self._src_col].apply(
             lambda x: gensim.utils.simple_preprocess(str(x), deacc=True)
         )
-        bigram = gensim.models.Phrases(sents, min_count=10, threshold=100)
-        trigram = gensim.models.Phrases(bigram[sents], threshold=100)
+        bigram = gensim.models.Phrases(sents, min_count=10, threshold=self._bigram_threshold)
+        trigram = gensim.models.Phrases(bigram[sents], threshold=self._trigram_threshold)
         bigram_mod = gensim.models.phrases.Phraser(bigram)
         trigram_mod = gensim.models.phrases.Phraser(trigram)
 
