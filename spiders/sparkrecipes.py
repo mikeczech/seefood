@@ -4,8 +4,8 @@ import scrapy
 class SparkRecipes(scrapy.Spider):
     name = "sparkrecipes"
     base_url = "https://recipes.sparkpeople.com"
-    recipe_start_id = 384073
-    recipe_end_id = 384074
+    recipe_start_id = 0
+    recipe_end_id = 500000
 
     custom_settings = {
         "DOWNLOAD_DELAY": 0.5,
@@ -24,12 +24,10 @@ class SparkRecipes(scrapy.Spider):
         data = {}
         data["title"] = response.css(".main_box h1::text").get()
         data["image_url"] = response.css("img[itemprop=image]").xpath("@src").get()
-        data["recipe_yield"] = response.css(
-            ".prep_box_w span[itemprop=recipeYield]::text"
-        ).get()
         data["ingredients"] = "|||".join(
             response.css("#ingredients ul span").xpath("string(.)").getall()
         )
+        data["url"] = f"{self.base_url}/recipe-detail.asp?recipe={response.meta['recipe_id']}"
 
         yield response.follow(
             f"{self.base_url}/recipe-calories.asp?recipe={response.meta['recipe_id']}",
@@ -47,11 +45,11 @@ class SparkRecipes(scrapy.Spider):
         )
 
         additional_cols = response.xpath(
-            f"//table/th/text()|//table/tr/th/text()"
+                f"//table/th/text()|//table/tr/th/text()"
         ).getall()
         for col in additional_cols:
-            response.meta["data"][col] = response.xpath(
-                f'//table[tr/th[text()="{col}"]]/td/text()|//table[th[text()="{col}"]]/td/text()'
+            response.meta["data"][col.strip()] = response.xpath(
+                f'//table/tr[th/text()="{col}"]/td/text()|//table/th[text()="{col}"]/following-sibling::td/text()'
             ).get()
 
         yield response.meta["data"]
