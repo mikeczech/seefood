@@ -1,0 +1,216 @@
+//
+//  CameraView.swift
+//  Seefood
+//
+//  Created by Mike Czech on 29.12.19.
+//  Copyright © 2019 Mike Czech. All rights reserved.
+//
+
+import SwiftUI
+
+import AVFoundation
+import UIKit
+
+final class CameraViewController: UIViewController {
+    
+    enum SessionSetupResult {
+        case success
+        case notAuthorized
+        case configurationFailed
+    }
+    
+    var delegate: AVCapturePhotoCaptureDelegate?
+    
+    let session = AVCaptureSession()
+    let photoOutput = AVCapturePhotoOutput()
+    let sessionQueue = DispatchQueue(label: "session queue",
+                                     attributes: [],
+                                     target: nil)
+    
+    var previewLayer: AVCaptureVideoPreviewLayer!
+    var videoDeviceInput: AVCaptureDeviceInput!
+    var setupResult: SessionSetupResult = .success
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        checkAuthorization()
+        
+        sessionQueue.async { [unowned self] in
+            self.configureSession()
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        sessionQueue.async {
+            switch self.setupResult {
+            case .success:
+                DispatchQueue.main.async { [unowned self] in
+                    self.previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
+                    self.previewLayer.frame = self.view.layer.bounds
+                    self.previewLayer.videoGravity = .resizeAspectFill
+                    self.view.layer.addSublayer(self.previewLayer)
+                    self.session.startRunning()
+                }
+            case .notAuthorized:
+                DispatchQueue.main.async { [unowned self] in
+                    let changePrivacySetting = "AVCam doesn't have permission to use the camera, please change privacy settings"
+                    let message = NSLocalizedString(changePrivacySetting, comment: "Alert message when the user has denied access to the camera")
+                    let alertController = UIAlertController(title: "AVCam", message: message, preferredStyle: .alert)
+                    
+                    alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
+                                                            style: .cancel,
+                                                            handler: nil))
+                    
+                    alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
+                                                            style: .default,
+                                                            handler: { _ in
+                                                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+                                                            }
+                    ))
+                    
+                    self.present(alertController, animated: true, completion: nil)
+                }
+            case .configurationFailed:
+                DispatchQueue.main.async { [unowned self] in
+                    let alertMsg = "Alert message when something goes wrong during capture session configuration"
+                    let message = NSLocalizedString("Unable to capture media", comment: alertMsg)
+                    let alertController = UIAlertController(title: "AVCam", message: message, preferredStyle: .alert)
+
+                    alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
+                                                            style: .cancel,
+                                                            handler: nil))
+                    
+                    self.present(alertController, animated: true, completion: nil)
+                }
+            }
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        sessionQueue.async { [unowned self] in
+            if self.setupResult == .success {
+                self.session.stopRunning()
+            }
+        }
+    }
+    
+    private func checkAuthorization() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            break
+        case .notDetermined:
+            sessionQueue.suspend()
+            AVCaptureDevice.requestAccess(for: .video) {[unowned self] granted in
+                if !granted {
+                    self.setupResult = .notAuthorized
+                }
+                self.sessionQueue.resume()
+            }
+        default:
+            setupResult = .notAuthorized
+        }
+    }
+    
+    private func configureSession() {
+        if setupResult != .success {
+            return
+        }
+        
+        session.beginConfiguration()
+        session.sessionPreset = AVCaptureSession.Preset.photo
+        
+        // add input
+        do {
+            let videoDeviceInput = try AVCaptureDeviceInput(device: AVCaptureDevice.default(for: .video)!)
+            if session.canAddInput(videoDeviceInput) {
+                session.addInput(videoDeviceInput)
+                self.videoDeviceInput = videoDeviceInput
+            } else {
+                print("Could not add video device input to the session")
+                setupResult = .configurationFailed
+                session.commitConfiguration()
+                return
+            }
+            
+        } catch {
+            print("Could not create video device input \(error)")
+            setupResult = .configurationFailed
+            session.commitConfiguration()
+            return
+        }
+        
+        // add output
+        if session.canAddOutput(photoOutput) {
+            session.addOutput(photoOutput)
+            photoOutput.isHighResolutionCaptureEnabled = true
+            photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+        } else {
+            print("Could not add photo output to the session")
+            setupResult = .configurationFailed
+            session.commitConfiguration()
+            return
+        }
+        
+        session.commitConfiguration()
+    }
+    
+    func capturePhoto() {
+        let photoSettings = AVCapturePhotoSettings()
+        photoSettings.isHighResolutionPhotoEnabled = true
+        if self.videoDeviceInput.device.isFlashAvailable {
+            photoSettings.flashMode = .auto
+        }
+        
+        if let firstAvailablePreviewPhotoPixelFormatTypes = photoSettings.availablePreviewPhotoPixelFormatTypes.first {
+            photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: firstAvailablePreviewPhotoPixelFormatTypes]
+        }
+        
+        photoOutput.capturePhoto(with: photoSettings, delegate: self.delegate!)
+    }
+
+}
+
+struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
+
+    public typealias UIViewControllerType = CameraViewController
+    
+    @Binding var image: UIImage?
+    
+    let cameraViewController = CameraViewController()
+
+    class Coordinator : NSObject, AVCapturePhotoCaptureDelegate {
+        var parent: CameraViewControllerRepresentable
+
+        init(_ parent: CameraViewControllerRepresentable) {
+            self.parent = parent
+        }
+        
+        func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+            guard let data = photo.fileDataRepresentation(),
+                  let image = UIImage(data: data) else {
+                    return
+                  }
+            parent.image = image
+        }
+    }
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<CameraViewControllerRepresentable>) -> CameraViewController {
+        cameraViewController.delegate = context.coordinator
+        return cameraViewController
+    }
+    
+    func updateUIViewController(_ uiViewController: CameraViewController, context: UIViewControllerRepresentableContext<CameraViewControllerRepresentable>) {
+    }
+    
+    func makeCoordinator() -> CameraViewControllerRepresentable.Coordinator {
+        Coordinator(self)
+    }
+    
+    func capturePhoto() {
+        cameraViewController.capturePhoto()
+    }
+
+}

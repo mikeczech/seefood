@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		048B9AAF23B8E6CE009540B9 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048B9AAE23B8E6CE009540B9 /* CameraView.swift */; };
 		049B40C523B8B028002AB980 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049B40C423B8B028002AB980 /* AppDelegate.swift */; };
 		049B40C723B8B028002AB980 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049B40C623B8B028002AB980 /* SceneDelegate.swift */; };
 		049B40CB23B8B029002AB980 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 049B40CA23B8B029002AB980 /* Assets.xcassets */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		048B9AAE23B8E6CE009540B9 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		049B40C123B8B028002AB980 /* Seefood.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Seefood.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		049B40C423B8B028002AB980 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		049B40C623B8B028002AB980 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				049B40D223B8B029002AB980 /* Info.plist */,
 				049B40CC23B8B029002AB980 /* Preview Content */,
 				049B40F423B8B039002AB980 /* Home.swift */,
+				048B9AAE23B8E6CE009540B9 /* CameraView.swift */,
 			);
 			path = Seefood;
 			sourceTree = "<group>";
@@ -270,6 +273,7 @@
 				049B40C523B8B028002AB980 /* AppDelegate.swift in Sources */,
 				049B40F523B8B039002AB980 /* Home.swift in Sources */,
 				049B40C723B8B028002AB980 /* SceneDelegate.swift in Sources */,
+				048B9AAF23B8E6CE009540B9 /* CameraView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -446,7 +450,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mczech.seefood.Seefood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -466,7 +470,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mczech.seefood.Seefood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
