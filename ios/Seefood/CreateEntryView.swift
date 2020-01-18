@@ -14,7 +14,12 @@ struct CreateEntryView: View {
     
     var body: some View {
         VStack {
-            image?.resizable().scaledToFit()
+            image?
+                .resizable()
+                .scaledToFill()
+                .frame(height: 400)
+                .clipped()
+            
             Spacer()
         }
     }

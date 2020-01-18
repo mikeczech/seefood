@@ -57,7 +57,7 @@ final class CameraViewController: UIViewController {
                     captureButton.layer.cornerRadius = 0.5 * captureButton.bounds.size.width
                     captureButton.clipsToBounds = true
                     captureButton.layer.borderColor = UIColor.gray.cgColor
-                    captureButton.layer.borderWidth = 3
+                    captureButton.layer.borderWidth = 6
                     captureButton.backgroundColor = UIColor.white
                     captureButton.alpha = 0.6
                     captureButton.addTarget(self, action:#selector(self.capturePhoto), for: .touchUpInside)
@@ -156,8 +156,6 @@ final class CameraViewController: UIViewController {
         // add output
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
-            photoOutput.isHighResolutionCaptureEnabled = true
-            photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
         } else {
             print("Could not add photo output to the session")
             setupResult = .configurationFailed
@@ -170,7 +168,6 @@ final class CameraViewController: UIViewController {
     
     @objc func capturePhoto(sender: UIButton!) {
         let photoSettings = AVCapturePhotoSettings()
-        photoSettings.isHighResolutionPhotoEnabled = true
         if self.videoDeviceInput.device.isFlashAvailable {
             photoSettings.flashMode = .auto
         }
@@ -179,9 +176,32 @@ final class CameraViewController: UIViewController {
             photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: firstAvailablePreviewPhotoPixelFormatTypes]
         }
         
+        
+        let deviceOrientation = UIDevice.current.orientation
+        guard let photoOutputConnection = photoOutput.connection(with: AVMediaType.video) else {fatalError("Unable to establish input>output connection")}
+        guard let videoOrientation = deviceOrientation.getAVCaptureVideoOrientationFromDevice()  else { return }
+        photoOutputConnection.videoOrientation = videoOrientation
+        
         photoOutput.capturePhoto(with: photoSettings, delegate: self.delegate!)
     }
 
+}
+
+extension UIDeviceOrientation {
+    func getAVCaptureVideoOrientationFromDevice() -> AVCaptureVideoOrientation? {
+        // return AVCaptureVideoOrientation from device
+        switch self {
+        case UIDeviceOrientation.portrait: return AVCaptureVideoOrientation.portrait
+        case UIDeviceOrientation.portraitUpsideDown: return AVCaptureVideoOrientation.portraitUpsideDown
+        case UIDeviceOrientation.landscapeLeft: return AVCaptureVideoOrientation.landscapeRight // TODO why reversed?
+        case UIDeviceOrientation.landscapeRight: return AVCaptureVideoOrientation.landscapeLeft
+        case UIDeviceOrientation.faceDown: return AVCaptureVideoOrientation.portrait // not so sure about this one
+        case UIDeviceOrientation.faceUp: return AVCaptureVideoOrientation.portrait // not so sure about this one
+        case UIDeviceOrientation.unknown: return nil
+        @unknown default:
+            fatalError()
+        }
+    }
 }
 
 struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
@@ -205,6 +225,7 @@ struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
                   let image = UIImage(data: data) else {
                     return
                   }
+
             parent.inputImage = Image(uiImage: image)
             parent.createEntry = true
         }

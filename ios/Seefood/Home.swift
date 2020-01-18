@@ -26,12 +26,26 @@ struct Home: View {
                             Button(action: {}) {
                                 Image(systemName: "house.fill")
                                     .imageScale(.large)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
                             }
                             Text("Home")
                                 .font(.caption)
                                 .padding(5)
-                                .foregroundColor(.white)
+                                .foregroundColor(.black)
+                        }
+                        .padding()
+                        .frame(width: 80.0, height: 80.0)
+                        Spacer()
+                        VStack {
+                            Button(action: {}) {
+                                Image(systemName: "waveform.path.ecg")
+                                    .imageScale(.large)
+                                    .foregroundColor(.black)
+                            }
+                            Text("Stats")
+                                .font(.caption)
+                                .padding(5)
+                                .foregroundColor(.black)
                         }
                         .padding()
                         .frame(width: 80.0, height: 80.0)
@@ -40,15 +54,17 @@ struct Home: View {
                             Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/) {
                                 Image(systemName: "person.circle.fill")
                                     .imageScale(.large)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
                             }
                             Text("Me")
                                 .font(.caption)
                                 .padding(5)
-                                .foregroundColor(.white)
+                                .foregroundColor(.black)
                         }.padding()
                             .frame(width: 80.0, height: 80.0)
-                    }.background(Color.blue)
+                    }
+                    .background(Color.white)
+                    .opacity(0.6)
                 }
             }
             
