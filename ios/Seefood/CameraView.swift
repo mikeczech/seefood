@@ -52,6 +52,17 @@ final class CameraViewController: UIViewController {
                     self.previewLayer.frame = self.view.layer.bounds
                     self.previewLayer.videoGravity = .resizeAspectFill
                     self.view.layer.addSublayer(self.previewLayer)
+                    
+                    let captureButton = UIButton(frame: CGRect(x: self.view.center.x - 40, y: self.view.center.y - 40 + 260, width: 80, height: 80))
+                    captureButton.layer.cornerRadius = 0.5 * captureButton.bounds.size.width
+                    captureButton.clipsToBounds = true
+                    captureButton.layer.borderColor = UIColor.gray.cgColor
+                    captureButton.layer.borderWidth = 3
+                    captureButton.backgroundColor = UIColor.white
+                    captureButton.alpha = 0.6
+                    captureButton.addTarget(self, action:#selector(self.capturePhoto), for: .touchUpInside)
+                    
+                    self.view.addSubview(captureButton)
                     self.session.startRunning()
                 }
             case .notAuthorized:
@@ -157,7 +168,7 @@ final class CameraViewController: UIViewController {
         session.commitConfiguration()
     }
     
-    func capturePhoto() {
+    @objc func capturePhoto(sender: UIButton!) {
         let photoSettings = AVCapturePhotoSettings()
         photoSettings.isHighResolutionPhotoEnabled = true
         if self.videoDeviceInput.device.isFlashAvailable {
@@ -177,8 +188,9 @@ struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
 
     public typealias UIViewControllerType = CameraViewController
     
-    @Binding var image: UIImage?
-    
+    @Binding var inputImage: Image?
+    @Binding var createEntry: Bool
+        
     let cameraViewController = CameraViewController()
 
     class Coordinator : NSObject, AVCapturePhotoCaptureDelegate {
@@ -193,7 +205,8 @@ struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
                   let image = UIImage(data: data) else {
                     return
                   }
-            parent.image = image
+            parent.inputImage = Image(uiImage: image)
+            parent.createEntry = true
         }
     }
     
@@ -207,10 +220,6 @@ struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
     
     func makeCoordinator() -> CameraViewControllerRepresentable.Coordinator {
         Coordinator(self)
-    }
-    
-    func capturePhoto() {
-        cameraViewController.capturePhoto()
     }
 
 }
