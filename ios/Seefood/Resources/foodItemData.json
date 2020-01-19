@@ -1,0 +1,17 @@
+[
+  {
+    "id": 0,
+    "category": "Burger",
+    "calories": 250
+  },
+  {
+    "id": 1,
+    "category": "Soft Drink",
+    "calories": 150
+  },
+  {
+    "id": 2,
+    "category": "French Fries",
+    "calories": 300
+  }
+]

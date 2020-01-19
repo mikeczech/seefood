@@ -17,7 +17,7 @@ struct Home: View {
         VStack {
             ZStack {
                 CameraViewControllerRepresentable(inputImage: self.$inputImage, createEntry: self.$createEntry).sheet(isPresented: self.$createEntry) {
-                    CreateEntryView(image: self.$inputImage)
+                    CreateEntry(image: self.$inputImage)
                 }
                 VStack {
                     Spacer()
