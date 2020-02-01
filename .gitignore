@@ -1,4 +1,8 @@
+models/
+data/
 notebooks/data
 notebooks/*.ann
 notebooks/.ipynb_checkpoints
 notebooks/**/.ipynb_checkpoints
+terraform/.terraform
+**/__pycache__
