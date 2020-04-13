@@ -19,6 +19,12 @@ wordcloud = "^1.6.0"
 matplotlib = "^3.2.1"
 black = "^19.10b0"
 google-cloud-bigquery = {extras = ["pandas"], version = "^1.24.0"}
+tensorboard = "^2.1.1"
+ipywidgets = "^7.5.1"
+line_profiler = "^3.0.2"
+lmdb = "^0.98"
+pympler = "^0.8"
+pandas_gbq = "^0.13.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
