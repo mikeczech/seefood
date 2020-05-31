@@ -77,7 +77,7 @@ class PrintPreprocessStats(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y = None):
         pca_explained_var = self._pca.explained_variance_ratio_
-        logging.info(f"[PCA] explained variance mean: {pca_explained_var.mean()}, std: {pca_explained_var.std()}")
+        logging.debug(f"[PCA] explained variance mean: {pca_explained_var.mean()}, std: {pca_explained_var.std()}")
         return self
 
     def transform(self, X, y = None):
