@@ -33,6 +33,9 @@ colorcet = "^2.0.2"
 holoviews = "^1.13.2"
 twisted = "^20.3.0"
 skorch = "^0.8.0"
+plotly = "^4.6.0"
+scikit-lego = "^0.4.1"
+optuna = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
