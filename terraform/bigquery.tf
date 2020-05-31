@@ -4,3 +4,8 @@ resource "google_bigquery_dataset" "sparkrecipes" {
   location                    = "US"
 }
 
+resource "google_bigquery_dataset" "flickr" {
+  dataset_id                  = "flickr"
+  friendly_name               = "flickr"
+  location                    = "US"
+}

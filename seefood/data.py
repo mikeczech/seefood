@@ -2,8 +2,10 @@ import pickle
 
 from PIL import Image
 import torch
+from torchvision import transforms
 import lmdb
 import numpy as np
+from tqdm.notebook import tqdm
 
 class LMDBImageItem:
     def __init__(self, img_path, img_features, target):
@@ -23,7 +25,7 @@ class LMDBImageItem:
 
     @property
     def target(self):
-        return self_target
+        return self._target
 
 
 class LMDBDataset(torch.utils.data.Dataset):
@@ -53,10 +55,21 @@ class LMDBDataset(torch.utils.data.Dataset):
         else:
             target = item.target
 
-        return item.path, item.features, item.target
+        return item.path, item.features, target
 
     def __len__(self):
         return self.length
+
+
+def get_default_transform(image_size):
+    return transforms.Compose(
+       [
+            transforms.Resize(image_size),
+            transforms.CenterCrop(image_size),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), # mean and std of imagenet
+        ]
+    )
 
 
 class ImageDataset(torch.utils.data.Dataset):
@@ -66,7 +79,7 @@ class ImageDataset(torch.utils.data.Dataset):
         self._transform = transform
 
     def __len__(self):
-        return len(self.images)
+        return len(self._images)
 
     def __getitem__(self, idx):
         img_path = self._images.iloc[idx]
@@ -75,3 +88,34 @@ class ImageDataset(torch.utils.data.Dataset):
         if self._transform:
             image = self._transform(image)
         return img_path, image, self._targets.iloc[idx]
+
+
+class LMDBEmbeddingWriter:
+
+    def __init__(self, feature_extractor, device):
+        self._feature_extractor = feature_extractor
+        self._device = device
+
+    def write(self, lmdb_filename, dataloader, map_size):
+        index = 0
+        with lmdb.open(lmdb_filename, map_size=map_size) as env:
+            for batch in tqdm(dataloader):
+                index += self._write_to_env(env, batch, index)
+
+    def _write_to_env(self, env, batch, index):
+        image_paths, images, targets = batch
+        assert len(image_paths) == len(images) == len(targets)
+
+        written_count = 0
+        cpu = torch.device("cpu")
+        with env.begin(write=True) as txn:
+            images = images.to(self._device)
+            features = self._feature_extractor(images).to(cpu)
+            for p, f, t in zip(image_paths, features, targets):
+                key = f"{index + written_count:08}".encode("ascii")
+                value = LMDBImageItem(p, f, t)
+                txn.put(key, pickle.dumps(value))
+                written_count += 1
+
+        return written_count
+

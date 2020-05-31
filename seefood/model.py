@@ -9,8 +9,17 @@ from skorch.callbacks import Checkpoint
 import numpy as np
 
 from sklearn.base import BaseEstimator
+from sklearn.base import TransformerMixin
 from sklearn.base import RegressorMixin
 from sklearn.utils.validation import check_is_fitted
+from sklearn.mixture import GaussianMixture
+
+from sklego.pipeline import DebugPipeline
+
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+import logging
 
 class CalorieNet(nn.Module):
     """ Predicts calories from image features """
@@ -61,6 +70,25 @@ def calorie_model(val_ds):
         device='cuda'
     )
 
+class PrintPreprocessStats(BaseEstimator, TransformerMixin):
 
-def food_recognition_model():
-    return None
+    def __init__(self, pca):
+        self._pca = pca
+
+    def fit(self, X, y = None):
+        pca_explained_var = self._pca.explained_variance_ratio_
+        logging.info(f"[PCA] explained variance mean: {pca_explained_var.mean()}, std: {pca_explained_var.std()}")
+        return self
+
+    def transform(self, X, y = None):
+        return X
+
+
+def food_recognition_model(**params):
+    pca = PCA(512, whiten=True)
+    return DebugPipeline(steps=[
+        ("scale", StandardScaler()),
+        ("pca", pca),
+        ("print_preprocess_stats", PrintPreprocessStats(pca)),
+        ("model", GaussianMixture(n_components=4, covariance_type='full', max_iter=int(1e7)))
+    ], log_callback='default').set_params(**params)

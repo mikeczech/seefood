@@ -13,7 +13,8 @@ class EfficientNetFeatureExtractor(nn.Module):
     """ Extracts features using EfficientNet """
 
     def __init__(self, efficientnet_model_name):
-        super(FeatureExtractor, self).__init__()
+        super(EfficientNetFeatureExtractor, self).__init__()
+        torch.hub.list("rwightman/gen-efficientnet-pytorch")
         self.model = torch.hub.load(
             "rwightman/gen-efficientnet-pytorch", efficientnet_model_name, pretrained=True
         )
