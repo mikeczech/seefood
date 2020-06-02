@@ -85,10 +85,10 @@ class PrintPreprocessStats(BaseEstimator, TransformerMixin):
 
 
 def food_recognition_model(**params):
-    pca = PCA(512, whiten=True)
+    pca = PCA(512, whiten=True, random_state=0)
     return DebugPipeline(steps=[
         ("scale", StandardScaler()),
         ("pca", pca),
         ("print_preprocess_stats", PrintPreprocessStats(pca)),
-        ("model", GaussianMixture(n_components=4, covariance_type='full', max_iter=int(1e7)))
+        ("model", GaussianMixture(n_components=4, covariance_type='full', random_state=0, max_iter=int(1e7)))
     ], log_callback='default').set_params(**params)

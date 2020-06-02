@@ -94,12 +94,12 @@ def plot_interactive_scatter(X_embedding, img_urls, values=None, labels=None, wi
     return fig
 
 
-def plot_images(ids, paths, max_num=20, figsize=(15,15)):
+def plot_images(img_paths, max_num=32, figsize=(25,25)):
     # read images
-    ids = ids[:max_num]
+    img_paths = img_paths[:max_num]
     images = []
-    for image_id in ids:
-        with Image.open(paths[image_id]) as f:
+    for path in img_paths:
+        with Image.open(path) as f:
             image = f.convert("RGB")
             images.append(image)
 

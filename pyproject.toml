@@ -5,7 +5,7 @@ description = ""
 authors = ["Mike Czech <mike.czech@ottogroup.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "3.7.3"
 nb_black = "^1.0.7"
 jupyterlab = "^2.0.1"
 tqdm = "^4.43.0"
